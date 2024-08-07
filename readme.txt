@@ -1,6 +1,3 @@
-TES CODING PDP BCA FINANCE TECHNOLOGY
-
-Nama : Isti Nurhafiyah
 
 
 Cara Menjalankan Aplikasi
