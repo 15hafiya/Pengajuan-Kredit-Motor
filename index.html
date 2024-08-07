@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengajuan Kredit Motor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .action-buttons button {
+            margin-right: 5px;
+            background-color: #007bff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .action-buttons button.reject {
+            background-color: #dc3545;
+        }
+
+        .action-buttons button.accept {
+            background-color: #28a745;
+        }
+
+        .action-buttons button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Form Pengajuan Kredit Motor</h1>
+        <form id="applyForm">
+            <label for="nama_pemohon">Nama Pemohon:</label>
+            <input type="text" id="nama_pemohon" required>
+
+            <label for="nomor_identitas">Nomor Identitas:</label>
+            <input type="text" id="nomor_identitas" required>
+
+            <label for="alamat">Alamat:</label>
+            <textarea id="alamat" rows="4" required></textarea>
+
+            <label for="jumlah_pinjam">Jumlah Pinjam:</label>
+            <input type="number" id="jumlah_pinjam" required>
+
+            <label for="tenor">Tenor (bulan):</label>
+            <input type="number" id="tenor" required>
+
+            <button type="submit">Ajukan Kredit</button>
+        </form>
+
+        <h1>Pengajuan Kredit</h1>
+        <table id="applications">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nama Pemohon</th>
+                    <th>Nomor Identitas</th>
+                    <th>Alamat</th>
+                    <th>Jumlah Pinjam</th>
+                    <th>Tenor</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('applyForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const nama_pemohon = document.getElementById('nama_pemohon').value;
+            const nomor_identitas = document.getElementById('nomor_identitas').value;
+            const alamat = document.getElementById('alamat').value;
+            const jumlah_pinjam = document.getElementById('jumlah_pinjam').value;
+            const tenor = document.getElementById('tenor').value;
+
+            fetch('http://localhost:3000/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nama_pemohon, nomor_identitas, alamat, jumlah_pinjam, tenor })
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    loadApplications();
+                });
+        });
+
+        function loadApplications() {
+            fetch('http://localhost:3000/applications')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#applications tbody');
+                    tableBody.innerHTML = '';
+                    data.forEach(application => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${application.id}</td>
+                            <td>${application.nama_pemohon}</td>
+                            <td>${application.nomor_identitas}</td>
+                            <td>${application.alamat}</td>
+                            <td>${application.jumlah_pinjam}</td>
+                            <td>${application.tenor}</td>
+                            <td>${application.status}</td>
+                            <td class="action-buttons">
+                                <button class="accept" onclick="approveApplication(${application.id}, 'Disetujui')">Setujui</button>
+                                <button class="reject" onclick="approveApplication(${application.id}, 'Ditolak')">Tolak</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                });
+        }
+
+        function approveApplication(id, status) {
+            fetch('http://localhost:3000/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status })
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    loadApplications();
+                });
+        }
+
+        loadApplications();
+    </script>
+</body>
+
+</html>
